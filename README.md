@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Fake News Detection System - TRUTH
 
 An AI-powered system to detect and combat misinformation and fake news in digital media.
@@ -128,3 +129,6 @@ This is a prototype system. For production use, consider:
 
 This project is provided as-is for educational and demonstration purposes.
 
+=======
+# fake-news-detector3
+>>>>>>> 27fe77d58fbd45764dc665b5a236317052ef373b
