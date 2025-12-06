@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake News Detection System - TRUTH</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .results {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .verdict-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .verdict-card.true {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .verdict-card.fake {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+
+        .verdict-card.uncertain {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .verdict-title {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .score-display {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .confidence {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .metric-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .details-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .details-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            padding: 10px;
+            background: white;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .sample-articles {
+            margin-top: 30px;
+        }
+
+        .sample-btn {
+            background: #f8f9fa;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .sample-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #c33;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Fake News Detection System</h1>
+            <p>AI-Powered Truth Verification Platform</p>
+        </div>
+
+        <div class="main-card">
+            <div class="input-section">
+                <div class="form-group">
+                    <label for="article-text">Article Text *</label>
+                    <textarea id="article-text" placeholder="Paste the news article text here..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="source-url">Source URL (Optional)</label>
+                    <input type="text" id="source-url" placeholder="https://example.com/article">
+                </div>
+                <button class="btn" onclick="verifyNews()">Verify News Article</button>
+            </div>
+
+            <div class="sample-articles">
+                <h3 style="margin-bottom: 15px; color: #333;">Try Sample Articles:</h3>
+                <button class="sample-btn" onclick="loadSample('real')">Real News Sample</button>
+                <button class="sample-btn" onclick="loadSample('fake')">Fake News Sample</button>
+                <button class="sample-btn" onclick="loadSample('uncertain')">Uncertain Sample</button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 10px;">Analyzing article...</p>
+            </div>
+
+            <div class="results" id="results">
+                <div class="verdict-card" id="verdict-card">
+                    <div class="verdict-title" id="verdict-title">Verifying...</div>
+                    <div class="score-display" id="score-display">0.00</div>
+                    <div class="confidence" id="confidence">Confidence: 0%</div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <h3>Text Analysis Score</h3>
+                        <div class="metric-value" id="text-score">0.00</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="text-progress" style="width: 0%">0%</div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Source Credibility</h3>
+                        <div class="metric-value" id="source-score">N/A</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="source-progress" style="width: 0%">0%</div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Fact-Check Score</h3>
+                        <div class="metric-value" id="fact-score">0.00</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="fact-progress" style="width: 0%">0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="details-section" id="details-section">
+                    <h3>Detailed Analysis</h3>
+                    <div id="details-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sampleArticles = {
+            real: {
+                text: "Breaking News: Scientists at the Massachusetts Institute of Technology have announced a significant breakthrough in renewable energy technology. According to a peer-reviewed study published in Nature Energy, researchers have developed a new solar cell design that increases efficiency by 25%. The research, conducted over three years with funding from the National Science Foundation, has been verified by independent laboratories. Dr. Sarah Johnson, lead researcher, stated: 'This advancement could significantly reduce the cost of solar energy production.' The findings were presented at the International Renewable Energy Conference on March 15, 2024.",
+                url: "https://www.reuters.com/technology/solar-breakthrough"
+            },
+            fake: {
+                text: "SHOCKING TRUTH: Doctors HATE this one simple trick that cures diabetes in 24 hours! Click here to discover the secret that Big Pharma doesn't want you to know! Number 7 will absolutely blow your mind! This guaranteed method has been hidden from the public for years. ACT NOW - Limited time offer! You won't believe what happens next!",
+                url: "https://suspicious-site.tk/amazing-cure"
+            },
+            uncertain: {
+                text: "A new study suggests that regular consumption of green tea may have health benefits. Some researchers claim it can help with weight loss, though the evidence is mixed. The study involved 100 participants over 6 months. However, critics point out that the sample size was relatively small and more research is needed. The findings were published in a nutrition journal, but some experts remain skeptical about the conclusions.",
+                url: "https://healthblog.com/green-tea-study"
+            }
+        };
+
+        function loadSample(type) {
+            const article = sampleArticles[type];
+            document.getElementById('article-text').value = article.text;
+            document.getElementById('source-url').value = article.url;
+        }
+
+        async function verifyNews() {
+            const text = document.getElementById('article-text').value.trim();
+            const sourceUrl = document.getElementById('source-url').value.trim();
+
+            if (!text) {
+                alert('Please enter article text to verify.');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+
+            try {
+                const response = await fetch('/api/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        source_url: sourceUrl
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayResults(data);
+                } else {
+                    showError(data.error || 'An error occurred');
+                }
+            } catch (error) {
+                showError('Failed to connect to the server. Make sure the Flask app is running.');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function displayResults(data) {
+            document.getElementById('results').style.display = 'block';
+
+            // Update verdict
+            const verdictCard = document.getElementById('verdict-card');
+            const verdictTitle = document.getElementById('verdict-title');
+            const scoreDisplay = document.getElementById('score-display');
+            const confidence = document.getElementById('confidence');
+
+            verdictCard.className = 'verdict-card';
+            if (data.overall_score >= 0.7) {
+                verdictCard.classList.add('true');
+                verdictTitle.textContent = '✓ ' + data.verdict;
+            } else if (data.overall_score >= 0.4) {
+                verdictCard.classList.add('uncertain');
+                verdictTitle.textContent = '? ' + data.verdict;
+            } else {
+                verdictCard.classList.add('fake');
+                verdictTitle.textContent = '✗ ' + data.verdict;
+            }
+
+            scoreDisplay.textContent = (data.overall_score * 100).toFixed(0) + '%';
+            confidence.textContent = `Confidence: ${(data.confidence * 100).toFixed(0)}%`;
+
+            // Update metrics
+            const textScore = (data.text_analysis.score * 100).toFixed(0);
+            document.getElementById('text-score').textContent = textScore + '%';
+            document.getElementById('text-progress').style.width = textScore + '%';
+            document.getElementById('text-progress').textContent = textScore + '%';
+
+            if (data.source_credibility) {
+                const sourceScore = (data.source_credibility.score * 100).toFixed(0);
+                document.getElementById('source-score').textContent = sourceScore + '%';
+                document.getElementById('source-progress').style.width = sourceScore + '%';
+                document.getElementById('source-progress').textContent = sourceScore + '%';
+            } else {
+                document.getElementById('source-score').textContent = 'N/A';
+                document.getElementById('source-progress').style.width = '0%';
+            }
+
+            const factScore = (data.fact_checking.score * 100).toFixed(0);
+            document.getElementById('fact-score').textContent = factScore + '%';
+            document.getElementById('fact-progress').style.width = factScore + '%';
+            document.getElementById('fact-progress').textContent = factScore + '%';
+
+            // Update details
+            const detailsContent = document.getElementById('details-content');
+            let html = '';
+
+            // Text Analysis Details
+            html += '<div class="detail-item"><strong>Text Analysis:</strong><br>';
+            html += `Sentiment: ${data.text_analysis.sentiment.toFixed(2)}<br>`;
+            html += `Suspicious Patterns Found: ${data.text_analysis.suspicious_patterns_found}<br>`;
+            html += `ML Confidence: ${(data.text_analysis.ml_confidence * 100).toFixed(0)}%<br>`;
+            html += `Word Count: ${data.text_analysis.word_count}<br>`;
+            html += `Unique Words: ${data.text_analysis.unique_words}</div>`;
+
+            // Source Credibility Details
+            if (data.source_credibility) {
+                html += '<div class="detail-item"><strong>Source Credibility:</strong><br>';
+                html += `Status: ${data.source_credibility.status}<br>`;
+                if (data.source_credibility.details.domain) {
+                    html += `Domain: ${data.source_credibility.details.domain}<br>`;
+                }
+                if (data.source_credibility.details.domain_age_days) {
+                    html += `Domain Age: ${data.source_credibility.details.domain_age_days} days<br>`;
+                }
+                html += '</div>';
+            }
+
+            // Fact-Checking Details
+            html += '<div class="detail-item"><strong>Fact-Checking:</strong><br>';
+            html += `False Claims Detected: ${data.fact_checking.false_claims_detected}<br>`;
+            html += `Has Citations: ${data.fact_checking.has_citations ? 'Yes' : 'No'}<br>`;
+            html += `Has Dates: ${data.fact_checking.has_dates ? 'Yes' : 'No'}<br>`;
+            html += `Has Quotes: ${data.fact_checking.has_quotes ? 'Yes' : 'No'}</div>`;
+
+            detailsContent.innerHTML = html;
+        }
+
+        function showError(message) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = `<div class="error">${message}</div>`;
+        }
+    </script>
+</body>
+</html>
+
